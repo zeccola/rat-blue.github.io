@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html><head lang="en">
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Fight Chain - Ethan Decarli Zeccola | zecc.sh</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Using a Breadth First Search algorithm to map out UFC fights" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Fight Chain" />
+<meta property="og:description" content="Using a Breadth First Search algorithm to map out UFC fights" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zecc.sh/posts/fight_chain/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-09-27T00:40:04+10:00" />
+<meta property="article:modified_time" content="2024-09-27T00:40:04+10:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Fight Chain"/>
+<meta name="twitter:description" content="Using a Breadth First Search algorithm to map out UFC fights"/>
+<script src="https://zecc.sh/js/feather.min.js"></script>
+	
+	
+        <link href="https://zecc.sh/css/fonts.2c2227b81b1970a03e760aa2e6121cd01f87c88586803cbb282aa224720a765f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="https://zecc.sh/css/main.ac08a4c9714baa859217f92f051deb58df2938ec352b506df655005dcaf98cc0.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="https://zecc.sh/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+		
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+	
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="https://zecc.sh/">Ethan Decarli Zeccola | zecc.sh</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/posts">All posts</a>
+		
+		<a href="/about">About</a>
+		
+		<a href="/tags">Tags</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Fight Chain</h1>
+			<div class="meta">Posted on Sep 27, 2024</div>
+		</div>
+		
+
+		<section class="body">
+			<h1 id="the-idea">The Idea</h1>
+<p>It&rsquo;s been ages since I&rsquo;ve posted something. One of my hobbies is to watch Mixed Martial Arts, and the question often comes up that if fighter X beats fighter Y, and fighter Y beats fighter Z, could fighter X beat fighter Y?</p>
+<p>An example of this is an upcoming fight in October, Khamzat Chimaev v Robert Whittaker. Chimaev has beaten Gilbert Burns, who has beaten Stephen Thompson, who has beaten Robert Whittaker.</p>
+<p>Obviously that doesn&rsquo;t really make sense to use this to predict fight outcomes due to the different styles in mixed martial arts, but I did always have the idea of making a webapp that finds these chains.</p>
+<h1 id="the-data">The Data</h1>
+<p>I found a csv version of the data at <a href="https://github.com/Greco1899/scrape_ufc_stats">this github repository</a>. I will be updating the spreadsheet i found, but currently it only goes up to UFC 293.</p>
+<p>It&rsquo;s a CSV file, so pulling the data from it is quite simple.</p>
+<h1 id="the-code">The code</h1>
+<p>The algorithm used is a Breadth First Search algorithm. It does this by first initializing the fighters that Fighter A has beaten in the queue, and each path in the queue represents a sequence of successful fights.</p>
+<p>The algorithm then undergoes &lsquo;exploration&rsquo;, in which it checks if the next fighter is fighter B, and in that instance it can stop there as it already knows there is a direct chain. However, if there is no direct chain, it will then retreive all the fighters that this fighter has beaten (their neighbours in the fight graph) and appends each to the current path, which it will then explore next.</p>
+<p>It will keep continuing until it finds a fighter that beat fighter B, or until there are no more chains to explore.</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/Animated_BFS.gif" alt="Breadth First Search algo"></p>
+<p>Using an algorithm like this, it is important to ensure that you don&rsquo;t follow loops (ie if fighter G has beaten fighter H, and fighter H has beaten fighter G, the algorithm would get stuck in a loop), so the easiest way to resolve this is to check if the fighter has already been visited (since their chain has already been explored).</p>
+<h1 id="the-website">The website</h1>
+<p>Check it out, but I didn&rsquo;t put much effort into making it look pretty. I want to someday develop this a bit further and possibly use it to find patterns in future fights / sport outcomes:</p>
+<p><a href="https://rat.blue/fight_chain.php">https://rat.blue/fight_chain.php</a></p>
+<p>Find the source code <a href="https://github.com/rat-blue/fight-chain">here</a>.</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/ufc">UFC</a></li>
+					
+					<li><a href="/tags/mma">MMA</a></li>
+					
+					<li><a href="/tags/fight-analysis">fight analysis</a></li>
+					
+					<li><a href="/tags/breadth-first-search">breadth-first search</a></li>
+					
+					<li><a href="/tags/algorithm">algorithm</a></li>
+					
+					<li><a href="/tags/data-visualization">data visualization</a></li>
+					
+					<li><a href="/tags/web-application">web application</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/rat-blue" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/ethan_zeccola" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://www.linkedin.com/in/ethan-decarli-zeccola-526054210/" rel="me" title="Linkedin"><i data-feather="linkedin"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2025  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html><head lang="en">
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Hacking my Wood Pellet Smoker - zecc.sh</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Trying my hand at reverse engineering an undocumented API" />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Hacking my Wood Pellet Smoker" />
+<meta property="og:description" content="Trying my hand at reverse engineering an undocumented API" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zecc.sh/posts/pitboss/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2024-04-22T00:40:04+10:00" />
+<meta property="article:modified_time" content="2024-04-22T00:40:04+10:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Hacking my Wood Pellet Smoker"/>
+<meta name="twitter:description" content="Trying my hand at reverse engineering an undocumented API"/>
+<script src="https://zecc.sh/js/feather.min.js"></script>
+	
+	
+        <link href="https://zecc.sh/css/fonts.2c2227b81b1970a03e760aa2e6121cd01f87c88586803cbb282aa224720a765f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="https://zecc.sh/css/main.ac08a4c9714baa859217f92f051deb58df2938ec352b506df655005dcaf98cc0.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="https://zecc.sh/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+		
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+	
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="https://zecc.sh/">zecc.sh</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/posts">All posts</a>
+		
+		<a href="/about">About</a>
+		
+		<a href="/tags">Tags</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Hacking my Wood Pellet Smoker</h1>
+			<div class="meta">Posted on Apr 22, 2024</div>
+		</div>
+		
+
+		<section class="body">
+			<p>I recently bought myself a <a href="https://au.pitboss-grills.com/grills/wood-pellet/pit-boss-pro-850-wood-pellet-smoker-with-cover">Pit Boss 850 Pro</a> - I like cooking and fairly recently got into smoking meats. I found that my model actually supports wi-fi, which was pretty attractive to me since I knew there had to be a way to hack it. There is an official app that you can use to connect it to wi-fi, which I did, but the app is kind of garbage (2.5 stars on the <a href="https://play.google.com/store/apps/details?id=com.pitbossgrills.app">Google Play Store</a>).</p>
+<h1 id="initial-investigation">Initial investigation</h1>
+<p>Initially my investigation started by investigating the local device&rsquo;s IP. A quick port scan revealed that HTTP was open, running Mongoose/6.16.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">ethan@wsl:nmap -p- 10.0.0.145
+Starting Nmap 7.80 ( https://nmap.org ) at 2025-04-10 20:31 AEST
+Nmap scan report for 10.0.0.145
+Host is up (0.015s latency).
+Not shown: 65534 closed ports
+PORT   STATE SERVICE
+80/tcp open  http
+</code></pre></div><p>Once we browse to it&rsquo;s webpage, we see a bunch of files, which appear to be Javascript, certificate and json files that the smoker uses:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Modified</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>api_dataview.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>7.3k</td>
+</tr>
+<tr>
+<td>ca.pem</td>
+<td>01-Jan-1970 00:00</td>
+<td>6.1k</td>
+</tr>
+<tr>
+<td>api_uart.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>5.6k</td>
+</tr>
+<tr>
+<td>api_net.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>5.0k</td>
+</tr>
+<tr>
+<td>api_i2c.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>4.8k</td>
+</tr>
+<tr>
+<td>lib_ws.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>4.7k</td>
+</tr>
+<tr>
+<td>app.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>4.0k</td>
+</tr>
+<tr>
+<td>api_events.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>3.8k</td>
+</tr>
+<tr>
+<td>api_http.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>3.7k</td>
+</tr>
+<tr>
+<td>api_aws.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>3.7k</td>
+</tr>
+<tr>
+<td>api_gpio.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>3.5k</td>
+</tr>
+<tr>
+<td>api_rpc.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.9k</td>
+</tr>
+<tr>
+<td>api_mqtt.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.9k</td>
+</tr>
+<tr>
+<td>lib_http.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.7k</td>
+</tr>
+<tr>
+<td>api_bt_gatts.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.3k</td>
+</tr>
+<tr>
+<td>api_config.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.1k</td>
+</tr>
+<tr>
+<td>api_file.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.1k</td>
+</tr>
+<tr>
+<td>api_log.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>2.0k</td>
+</tr>
+<tr>
+<td>api_math.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.8k</td>
+</tr>
+<tr>
+<td>api_timer.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.7k</td>
+</tr>
+<tr>
+<td>api_shadow.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.6k</td>
+</tr>
+<tr>
+<td>api_sys.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.6k</td>
+</tr>
+<tr>
+<td>polyfill.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.4k</td>
+</tr>
+<tr>
+<td>api_dht.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.4k</td>
+</tr>
+<tr>
+<td>api_bt_gattc.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.3k</td>
+</tr>
+<tr>
+<td>api_arch_uart.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1.2k</td>
+</tr>
+<tr>
+<td>api_wifi.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>1020</td>
+</tr>
+<tr>
+<td>api_bt_gatt.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>886</td>
+</tr>
+<tr>
+<td>api_bitbang.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>815</td>
+</tr>
+<tr>
+<td>api_adc.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>803</td>
+</tr>
+<tr>
+<td>api_pwm.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>726</td>
+</tr>
+<tr>
+<td>api_dash.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>703</td>
+</tr>
+<tr>
+<td>api_bt_gap.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>482</td>
+</tr>
+<tr>
+<td>api_esp32.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>460</td>
+</tr>
+<tr>
+<td>api_ota.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>278</td>
+</tr>
+<tr>
+<td>conf9.json</td>
+<td>01-Jan-1970 00:00</td>
+<td>226</td>
+</tr>
+<tr>
+<td>platform.js</td>
+<td>01-Jan-1970 00:00</td>
+<td>154</td>
+</tr>
+<tr>
+<td>conf0.json</td>
+<td>01-Jan-1970 00:00</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>The 1970 date obviously sticks out as the unix epoch time. There wasn&rsquo;t too much info in here that I could use. There is a reference to mqtt, rpc and uart, which revealed some things I may be able to use to get into the device, but it&rsquo;s mostly standard js.</p>
+<p>Fun fact, the conf9.json contains your wifi SSID and password in plaintext. I would expect they would use some kind of encryption to be honest.</p>
+<p>I tried to fuzz the directory</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">dirb http://10.0.0.145 common.txt -S
+</code></pre></div><p>It only found one directory which returned HTTP invalid request:
+http://10.0.0.145/rpc</p>
+<p>Trying to connect via RPC didn&rsquo;t really work as I didn&rsquo;t know what commands to send yet.</p>
+<h1 id="reverse-engineering-the-app">Reverse engineering the app</h1>
+<p>I decided to investigate the app instead. I used a rooted version of Android by using an Android Studio Android emulator.
+Getting everything to work was a bit of a balancing act — I needed a version of Android that both supported the Play Store (required for the Pit Boss app) and could also be rooted. Eventually, I landed on an emulated Pixel 6a running Android 13.0 (API 33), which ticked both boxes. I used <a href="https://github.com/newbit1/rootAVD">rootAVD</a> to root the virtual machine.</p>
+<p>I installed <a href="https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture">PCAPdroid</a> to run a packet capture. The app allows for TLS decryption, which I turned on, but the app stopped working. I realised that it must not be trusting the PCAPdroid certificate as it was installed as a user certificate. I needed to turn that user certificate into a system certificate to get around this issue.</p>
+<p>After doing a bit of research, I found a plugin for Magisk called <a href="https://github.com/NVISOsecurity/MagiskTrustUserCerts">Trust User Certs</a> which moves certificates from a user certificate:</p>
+<p><img src="https://i.imgur.com/YXVlIy2.png" alt="User Certificate"></p>
+<p>To a system certificate:</p>
+<p><img src="https://i.imgur.com/DQIJ4Lq.png" alt="System Certificate"></p>
+<p>Once that was done, I was able to run a packet capture and decrypt the</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/rat-blue" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/ethan_zeccola" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://www.linkedin.com/in/ethan-decarli-zeccola-526054210/" rel="me" title="Linkedin"><i data-feather="linkedin"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2025  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

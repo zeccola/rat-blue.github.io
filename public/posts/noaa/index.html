@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html><head lang="en">
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>RTL-SDR and NOAA Satellites - Ethan Decarli Zeccola | zecc.sh</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Running your own weather station is cool and all, but having a weather satellite station is even better." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="RTL-SDR and NOAA Satellites" />
+<meta property="og:description" content="Running your own weather station is cool and all, but having a weather satellite station is even better." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://zecc.sh/posts/noaa/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2025-04-07T00:40:04+10:00" />
+<meta property="article:modified_time" content="2025-04-07T00:40:04+10:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RTL-SDR and NOAA Satellites"/>
+<meta name="twitter:description" content="Running your own weather station is cool and all, but having a weather satellite station is even better."/>
+<script src="https://zecc.sh/js/feather.min.js"></script>
+	
+	
+        <link href="https://zecc.sh/css/fonts.2c2227b81b1970a03e760aa2e6121cd01f87c88586803cbb282aa224720a765f.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="https://zecc.sh/css/main.ac08a4c9714baa859217f92f051deb58df2938ec352b506df655005dcaf98cc0.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="https://zecc.sh/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css"   />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+		
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+	
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="https://zecc.sh/">Ethan Decarli Zeccola | zecc.sh</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/posts">All posts</a>
+		
+		<a href="/about">About</a>
+		
+		<a href="/tags">Tags</a>
+		
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">RTL-SDR and NOAA Satellites</h1>
+			<div class="meta">Posted on Apr 7, 2025</div>
+		</div>
+		
+
+		<section class="body">
+			<p>I&rsquo;ve had an <a href="https://www.rtl-sdr.com/rtl-sdr-blog-v-3-dongles-user-guide/">RTL-SDR V3</a> kicking around for quite a while at home. They are a good piece of kit - essentially a USB radio receiver that receives from 500khz to 1.766ghz (and also has BIAS T support). I&rsquo;ve used it for some cool 433mhz projects, as well as just listening to FM radio when I feel like it, but I had the idea to use it to read NOAA weather satellites.</p>
+<h1 id="weather-satellites">Weather Satellites</h1>
+<p>There are essentially 2 different types of weather satellites that are used (there are more, but they mostly follow these two types of orbit).</p>
+<ol>
+<li>
+<p>Geostationary orbits. These normally orbit at around 35,000km above the Earth&rsquo;s equator, they appear to be floating above us but in reality they orbit at the same speed as earth&rsquo;s rotation, so it&rsquo;s constantly looking at the same side of the earth. They typically provide good monitoring of specific regions which can make them useful for tracking hurricanes. <a href="https://en.wikipedia.org/wiki/Himawari_8">Himawari 8</a> is a good example of this, it was launched by Japan in 2014. The issue with these is that they are very far away, and as such the signal from space is very weak, meaning it will be quite hard to pull images off it.</p>
+</li>
+<li>
+<p>Sun-synchronous orbits. These are orbits that rotate around the earth, rotating around each place roughly at the <a href="https://en.wikipedia.org/wiki/Sun-synchronous_orbit">same time each day</a>, meaning that the light level will be fairly consistent given a pass over an area. These only orbit around 800km above earth, and as such can easily be connected to.</p>
+</li>
+</ol>
+<p>I&rsquo;ve chosen the <a href="https://en.wikipedia.org/wiki/NOAA-15">NOAA 15 satellite</a>, as it passes over my city quite regularly at around 7am and 9pm.</p>
+<h1 id="the-setup">The setup</h1>
+<p>The setup was quite simple. I had a milk crate which had a spare Thinkpad T480s running Ubuntu 22.04 with <a href="https://www.sdrpp.org/">SDR++</a>, <a href="https://www.n2yo.com/passes/?s=25338&amp;a=1">N2YO</a> for tracking the satellite overhead, and <a href="https://www.satdump.org/">Satdump</a> for converting the signal to a usable image.</p>
+<p>As for the SDR, I was using my RTL-SDR v3 with a DIY dipole made of cardboard and copper wire angled at 120 degrees. Dipoles work because each &lsquo;leg&rsquo; of the dipole handles one half of the alternating radio wave. One leg carries the positive half cycle while the other carries the negative half cycle:</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Dipole_receiving_antenna_animation_6_300ms.gif/330px-Dipole_receiving_antenna_animation_6_300ms.gif" alt="Dipole antenna"></p>
+<p>Angled dipoles are simple to make, but they are directional so I used an app called <a href="https://play.google.com/store/apps/details?id=com.noctuasoftware.stellarium_free&amp;hl=en_AU">Stellarium</a> to track the satellite as it passed through the sky.</p>
+<p>Technically, the best type of antenna for this setup is a <a href="https://wiki.rev0.net/Quadrifilar_Helix">QFH antenna</a>, but they are quite expensive, and DIY QFH&rsquo;s can be a pain to make. They&rsquo;re better than a dipole because they are omnidirectional, meaning you can just set it up in a single spot and never have to aim / move it.</p>
+<h1 id="first-attempt">First attempt</h1>
+<p>Heres a lesson to be learned when it comes to preparation and thinking on the spot. I planned out a satellite pass on n2yo and found it would pass over at around 9pm, so I headed down to the beach with my laptop, the SDR and the antenna. I followed the signal as it went along the sky, but I wasn&rsquo;t seeing a signal on SDR++ - for some reason.</p>
+<p>Not wanting to waste the pass, I pulled out my trusty <a href="https://baofengtech.com/product/uv-5r/">UV-5R</a> and MacGyvered a solution by dialing into the frequency and recorded the speaker output by holding my phone against the speaker of the radio. To my surprise, it somewhat worked:</p>
+<p><img src="https://i.imgur.com/fQXpUL8.png" alt="First Attempt"></p>
+<p>I&rsquo;ll admit, it doesn&rsquo;t look impressive at all, but at least you can still make out <em>something</em> resembling a proper weather picture. It was only once I was home that I realised the gain on SDR++ was set to practically zero! This explained why I couldn&rsquo;t pick up the NOAA satellite signal.</p>
+<h1 id="second-attempt">Second attempt</h1>
+<p>For the second attempt, I made sure to have the gain turned up, and even used a <a href="https://en.wikipedia.org/wiki/Low-noise_amplifier">Low Noise Amplifier</a> to make sure I could pick up the signal. This time, it was a huge success. Despite the pass being objectively worse than the original (Attempt 1 was practically directly overhead, this one was at a 50 degree angle from the horizon) I got a significantly better picture:</p>
+<p><img src="https://i.imgur.com/88qgolU.jpeg" alt="Second Attempt"></p>
+<p>I was super happy with this pass, the image is super crisp and clean. You can even see down the bottom where the signal gets really poor due to it dipping below the horizon.</p>
+<h1 id="third-attempt">Third attempt</h1>
+<p>For the third and final pass, I wanted to try something slightly different. I had made the beach trip twice now, so I wanted to see if I could pick it up from my house. I did this by sticking each leg of the dipole up against the window that faced the rough direction the satellite would be in.</p>
+<p><img src="https://i.imgur.com/6cbL1RS.png" alt="Third Attempt"></p>
+<p>The image wasn&rsquo;t great. This is probably why Dipoles are typically aimed at the source, you don&rsquo;t get a great signal otherwise.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>Overall, I was really happy with this project. I had the idea of automating this to an <a href="https://en.wikipedia.org/wiki/ESP32">ESP32</a> connected to an e-ink display, which would automatically update with the latest NOAA picture. I might still give this a try, but I would really need one of the QFH antennas that I was talking about earlier in this post.</p>
+<p>Apart from that, moving forward I really want to try receiving a <a href="https://en.wikipedia.org/wiki/High-resolution_picture_transmission">HRPT</a> signal in the near future. They&rsquo;re significantly higher resolution, but also higher frequency than the normal NOAA signals, meaning it&rsquo;s going to pull a bit of work to do correctly.</p>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			<nav class="nav tags">
+				<ul class="tags">
+					
+					<li><a href="/tags/sdr">sdr</a></li>
+					
+					<li><a href="/tags/rtl-sdr">rtl-sdr</a></li>
+					
+					<li><a href="/tags/noaa">noaa</a></li>
+					
+					<li><a href="/tags/satellite">satellite</a></li>
+					
+					<li><a href="/tags/diy">diy</a></li>
+					
+					<li><a href="/tags/radio">radio</a></li>
+					
+				</ul>
+			</nav>
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/rat-blue" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/ethan_zeccola" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://www.linkedin.com/in/ethan-decarli-zeccola-526054210/" rel="me" title="Linkedin"><i data-feather="linkedin"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2025  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>

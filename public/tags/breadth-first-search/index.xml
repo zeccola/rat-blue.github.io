@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>breadth-first search on Ethan Decarli Zeccola | zecc.sh</title>
+    <link>https://zecc.sh/tags/breadth-first-search/</link>
+    <description>Recent content in breadth-first search on Ethan Decarli Zeccola | zecc.sh</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 27 Sep 2024 00:40:04 +1000</lastBuildDate><atom:link href="https://zecc.sh/tags/breadth-first-search/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Fight Chain</title>
+      <link>https://zecc.sh/posts/fight_chain/</link>
+      <pubDate>Fri, 27 Sep 2024 00:40:04 +1000</pubDate>
+      
+      <guid>https://zecc.sh/posts/fight_chain/</guid>
+      <description>The Idea It&amp;rsquo;s been ages since I&amp;rsquo;ve posted something. One of my hobbies is to watch Mixed Martial Arts, and the question often comes up that if fighter X beats fighter Y, and fighter Y beats fighter Z, could fighter X beat fighter Y?
+An example of this is an upcoming fight in October, Khamzat Chimaev v Robert Whittaker. Chimaev has beaten Gilbert Burns, who has beaten Stephen Thompson, who has beaten Robert Whittaker.</description>
+    </item>
+    
+  </channel>
+</rss>
