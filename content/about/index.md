@@ -15,7 +15,7 @@ I like to write posts and articles on random things I come across or find intere
 
 ---
 
-
+```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Comment: User ID:	Ethan Zeccola <ethan@zecc.sh>
 Comment: Valid from:	6/09/2025 9:52 PM
@@ -36,4 +36,4 @@ DAUJBaRhMwAKCRC7zcf8rPsAHtQTAPsF17XBkYGmlimHrIYUQ2GMtNcGMxcfAqdW
 KRJlfNfIwgD/Qd4AkCZO5HUu+1M+pIHREdlYcPkfzDwYAxnSZR9b7QU=
 =3buz
 -----END PGP PUBLIC KEY BLOCK-----
-
+```
