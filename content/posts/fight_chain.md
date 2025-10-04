@@ -35,4 +35,4 @@ Check it out, but I didn't put much effort into making it look pretty. I want to
 
 https://rat.blue/fight_chain.php
 
-Find the source code [here](https://github.com/rat-blue/fight-chain).
+Find the source code [here](https://github.com/zeccola/fight-chain).
