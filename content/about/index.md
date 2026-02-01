@@ -4,14 +4,11 @@ date: 2025-09-06T00:40:04+10:00
 draft: false
 ---
 
-My name is Ethan Zeccola, I work as an Azure Consultant who recently graduated with a Bachelors of Information Technology majoring in Cybersecurity.
+I’m Ethan Zeccola, an Azure Consultant with a background in Cybersecurity and a Bachelor of Information Technology.
 
-I have a keen interest in Cybersecurity, IT, and IT infrastructure, I maintain a homelab which includes a Kubernetes cluster, an UNRAID server and a storage server.
+Outside of work, I run a homelab built around Kubernetes, UNRAID, and dedicated storage, mostly as an excuse to break things and learn how to fix them properly. Some of my hobbies and things I write about include going to the gym, playing music/guitar, cooking (largely smoking / BBQ), Radios, Tinkering, and watching UFC.
 
-Some of my hobbies include playing Guitar, Smoking / BBQ, Radios, and watching UFC.
-
-I like to write posts and articles on random things I come across or find interesting.
-
+This site is a place for notes, write-ups, and the occasional deep technical tangent on things I find useful or interesting, from infrastructure and security to whatever else I’m currently tinkering with.
 
 ---
 
