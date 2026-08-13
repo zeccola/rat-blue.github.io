@@ -22,7 +22,7 @@ PORT   STATE SERVICE
 80/tcp open  http
 ```
 
-Once we browse to it's webpage, we see a bunch of files, which appear to be Javascript, certificate and json files that the smoker uses:
+Once we browse to its webpage, we see a bunch of files, which appear to be Javascript, certificate and json files that the smoker uses:
 
 | Name              | Modified           | Size  |
 |-------------------|--------------------|-------|
@@ -84,8 +84,8 @@ Trying to connect via RPC didn't really work as I didn't know what commands to s
 
 
 # Reverse engineering the app
-I decided to investigate the app instead. I used a rooted version of Android by using an Android Studio Android emulator. 
-Getting everything to work was a bit of a balancing act — I needed a version of Android that both supported the Play Store (required for the Pit Boss app) and could also be rooted. Eventually, I landed on an emulated Pixel 6a running Android 13.0 (API 33), which ticked both boxes. I used [rootAVD](https://github.com/newbit1/rootAVD) to root the virtual machine.
+I decided to investigate the app instead. I used a rooted version of Android by using an Android Studio emulator.
+Getting everything to work was a bit of a balancing act. I needed a version of Android that both supported the Play Store (required for the Pit Boss app) and could also be rooted. Eventually, I landed on an emulated Pixel 6a running Android 13.0 (API 33), which ticked both boxes. I used [rootAVD](https://github.com/newbit1/rootAVD) to root the virtual machine.
 
 I installed [PCAPdroid](https://play.google.com/store/apps/details?id=com.emanuelef.remote_capture) to run a packet capture. The app allows for TLS decryption, which I turned on, but the app stopped working. I realised that it must not be trusting the PCAPdroid certificate as it was installed as a user certificate. I needed to turn that user certificate into a system certificate to get around this issue.
 
@@ -97,11 +97,11 @@ To a system certificate:
 
 ![System Certificate](https://i.imgur.com/DQIJ4Lq.png)
 
-Once that was done, I was able to run a packet capture and decrypt the communicatinos between the app and the Pitboss App's servers.
+Once that was done, I was able to run a packet capture and decrypt the communications between the app and the Pitboss App's servers.
 
 Finally I'm getting somewhere, I was able to use Ctrl + F to search for my username as a string, which led me directly to the specific request where I got the authentication URL:
 
-![Wireshark](https://i.imgur.com/A56hhUh.png)
+![Wireshark](https://i.imgur.com/NxfGSdj.png)
 
 From there, it was just a matter of turning on the packet capture, and capturing each specific feature of the app.
 
@@ -131,9 +131,6 @@ This responds with:
   },
   "errors": null
 }
-
-
-
 ```
 What's strange is that they seem to be using Shopify for this? I'm not certain why, as from my understanding shopify is for ecommerce, however I haven't used it in a development environment before so it may be normal. 
 
@@ -177,7 +174,7 @@ const status = {
 Shipping the parsing logic itself as a string of code from the backend is a wild design choice as it means Dansons can change the wire protocol per grill model without ever pushing an app update, at the cost of every client blindly evaluating whatever the server hands it. Once I had this, decoding the status strings was trivial - each hex pair maps to a probe temperature, a target temperature, or a boolean state like "is the auger motor running".
 
 # Websocket commands
-These are all the commands i've been able to glean. Sending commands turned out to be just as simple as receiving them, the socket accepts JSON-RPC style messages, and the one that matters most is `PB.SendMCUCommand`, which forwards a raw hex string straight to the smoker's control board:
+These are all the commands i've been able to glean. Sending commands turned out to be just as simple as receiving them. The socket accepts JSON-RPC style messages, and the one that matters most is `PB.SendMCUCommand`, which forwards a raw hex string straight to the smoker's control board:
 
 ```
 {"id":8,"app_id":"h9rRx/S2vdA9iw==","method":"PB.SendMCUCommand","params":{"command":"FE0501000802FF"}}
@@ -198,7 +195,7 @@ The same `/api/v1/grills/{id}` response also had the full table of commands the 
 | Turn Primer Motor On            | `FE0801FF`   |
 | Turn Primer Motor Off           | `FE0800FF`   |
 
-The 'Turn Grill On' was not documented but inferred, I can confirm that it does work but i **strongly** recommend you never turn the grill on remotely for safety reasons.
+The 'Turn Grill On' command was not documented but inferred. I can confirm that it does work, but I **strongly** recommend you never turn the grill on remotely for safety reasons.
 
 Setting a target temperature is a little more involved since it's built dynamically rather than a static hex string, but the logic for it was sitting right next to the table above:
 
@@ -213,7 +210,7 @@ So setting the grill to 220°F is just `FE0501` followed by the digits of 220 in
 
 From here on, the rest of this blog post won't be very structured, it will just be me Listing all the features of the app and interesting endpoints.
 
-#Features
+# Features
 I've used the [undocumented API](https://github.com/apption-labs/meater-cloud-public-rest-api) for [Meater](https://meater.com/shop) before, which uses simple GET requests to request the temperature of the temperature probe, however these smokers seem to use websockets instead, which is probably a better idea than sending constant GET requests.
 
 Beyond the websocket, there's a fairly standard REST API sitting behind `api-prod.dansonscorp.com` that the app uses for everything else - account, cart, notifications, and per-grill metadata:
